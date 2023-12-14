@@ -1,40 +1,170 @@
+
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 
 <head>
-  <script
-    type="text/javascript">window.$crisp = []; window.CRISP_WEBSITE_ID = "54e550e4-66fc-4031-b121-581b7e38a322"; (function () {d = document; s = d.createElement("script"); s.src = "https://client.crisp.chat/l.js"; s.async = 1; d.getElementsByTagName("head")[0].appendChild(s);})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi</title>
+    <!-- Bootstrap CSS from Chinese CDN -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TabNet(原熊猫云村)防失联</title>
-  <link rel="apple-touch-icon" href="https://cdn.u1.huluxia.com/g3/M02/19/F5/wKgBOV23guqAIvy8AAAlSkLYaV8350.png">
+    <style>
+        body {
+            background-color: white;
+            color: #3b5998;
+        }
+
+        .center-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .logo {
+            width: 64px;
+            height: 60px;
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+
+        .spinner-border {
+            margin-right: 10px;
+            color: #3b5998;
+        }
+
+        .btn-light {
+            color: white;
+            background-color: #3b5998;
+            font-size: 16px;
+            font-weight: bold;
+            border-color: #3b5998;
+            padding: 6.4px 15px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-light:hover {
+            color: #3b5998;
+            background-color: white;
+        }
+    </style>
 </head>
+<body>
+    <div class="container center-screen text-center">
+        <img src="https://s2.loli.net/2023/12/11/ZRz67S9KeYPfdsq.png" alt="Logo" class="logo">
+        <div id="message">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            正在查询可用域名，请等待数秒🔀…
+        </div>
+        <div id="domainButtons" class="mt-3"></div>
+    </div>
+<script>
+    const domains = ["go.tabweb3.site", "go.tabnet.top", "go.tabweb.xyz"];
+    let triedDomains = [];
 
-<body style="line-height: 1.9;background-image:url();">
-  <div style="padding-top:10%;text-align:center;">
+    function getRandomDomain() {
+        if (domains.length === triedDomains.length) {
+            showAllDomainsAsButtons();
+            return null;
+        }
 
-    <h1 style="color:#566573;">
-      <strong>TabNet(原熊猫云村)防失联</strong>
-    </h1>
-    <p style="color: #566573;">请永远记住永久防失联域名</p>
-    <p style="color: #566573;">https://web.tabnet3.repl.co</p>
-    <p style="color: #566573;">https://tabnet.netlify.app</p>
-    <p style="color: #566573;">https://duomihost.github.io</p>
-    <p>
-      <a href="https://tabnet.4everland.app" target="_blank">入口1</a>
-      <a href="https://go.tabnet.top" target="_blank">入口2</a>
-      <a href="https://go.tabweb3.site" target="_blank">入口3</a>
-      <a href="https://go.tabweb.xyz" target="_blank">入口4</a>
+        let randomDomain;
+        do {
+            randomDomain = domains[Math.floor(Math.random() * domains.length)];
+        } while (triedDomains.includes(randomDomain));
 
-    <p>
-      <a href="https://t.me/tabnet3" target="_blank">Telegram通知频道</a>
-      <br>
-    </p>
+        triedDomains.push(randomDomain);
+        return randomDomain;
+    }
 
-    <script type="text/javascript" color="255,255,255" opacity='0.7' zIndex="-2" count="200"
-      src="https://cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
-  </div>
+    function showAllDomainsAsButtons() {
+        document.getElementById('message').innerHTML = "😫抱歉，没有找到可用的域名!可以自行点击下面的链接跳转尝试。";
+        let buttonsHTML = '';
+        domains.forEach(domain => {
+            buttonsHTML += `<a href="https://${domain}" class="btn btn-light m-2">${domain}</a>`;
+        });
+        document.getElementById('domainButtons').innerHTML = buttonsHTML;
+    }
+
+    function checkDomain() {
+        const domain = getRandomDomain();
+        if (domain) {
+            fetch(`/check_domain.php?domain=${domain}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        document.getElementById('message').innerHTML = `🎉Hi, 太棒了，我们找到可用域名🥳<br>👉`;
+                        const domainBtn = `<a href="https://${domain}" target="_blank" class="btn btn-light">${domain}</a>`;
+                        document.getElementById('message').insertAdjacentHTML('beforeend', domainBtn);
+                        document.getElementById('message').insertAdjacentHTML('beforeend', '👈<br>点击打开或等待自动跳转');
+                        setTimeout(() => {
+                            window.location.href = `https://${domain}`;
+                        }, 1200);
+                    } else {
+                        checkDomain();
+                    }
+                })
+                .catch(error => {
+                    checkDomain();
+                });
+        }
+    }
+
+    function checkIPAndRedirect() {
+        fetch('/check_ip.php')
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'true') {
+                    document.getElementById('message').innerHTML = "似乎你正在使用国际IP访问<br>我们即将直接随机跳转一个域名";
+                    const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+                    setTimeout(() => {
+                        window.location.href = `https://${randomDomain}`;
+                    }, 1200);
+                } else {
+                    checkDomain();
+                }
+            })
+            .catch(error => {
+                checkDomain();
+            });
+    }
+</script>
+<script>
+    function checkUserAgentAndOrigin() {
+        const userAgent = navigator.userAgent;
+        const referrer = document.referrer;
+
+        // 检查用户代理或来源Hosts
+        if (/MicroMessenger/i.test(userAgent) || /QQ\//i.test(userAgent) || /woa/i.test(referrer)) {
+            if (/iPhone|iPod|iPad/i.test(userAgent)) {
+                alert("请关闭页面并使用 Safari浏览器 打开网站");
+                document.getElementById('message').innerText = "请关闭页面并使用 Safari浏览器 打开网站";
+                document.title = "请使用Safari浏览器打开网站";
+                return true;
+            } else {
+                alert("请关闭页面并使用 其他浏览器 打开网站");
+                document.getElementById('message').innerText = "请关闭页面并使用 其他浏览器 打开网站";
+                document.title = "请使用其他浏览器打开网站";
+                return true;
+            }
+        }
+        document.title = "XFLTD养鸡场";
+        return false;
+    }
+
+    setTimeout(() => {
+        if (!checkUserAgentAndOrigin()) {
+            checkIPAndRedirect();
+        }
+    }, 700);
+</script>
+<!-- Bootstrap JS, Popper.js, and jQuery from Chinese CDN -->
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
-
 </html>
